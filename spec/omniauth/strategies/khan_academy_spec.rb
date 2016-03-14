@@ -53,6 +53,6 @@ describe OmniAuth::Strategies::KhanAcademy do
     subject { khan_academy.login_url }
 
     it{ should be_a(String) }
-    it{ should =~ /\Ahttp:\/\/www.khanacademy.org\/api\/auth\/request_token\?oauth_callback=.+&oauth_consumer_key=\w+&oauth_nonce=\w+&oauth_signature.+&oauth_signature_method=HMAC-SHA1&oauth_timestamp=\d+&oauth_version=1\.0\z/ }
+    it{ should =~ /\Ahttps:\/\/www.khanacademy.org\/api\/auth\/request_token\?oauth_callback=.+&oauth_consumer_key=\w+&oauth_nonce=\w+&oauth_signature.+&oauth_signature_method=HMAC-SHA1&oauth_timestamp=\d+&oauth_version=1\.0\z/ }
   end
 end

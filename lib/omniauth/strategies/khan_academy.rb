@@ -20,10 +20,11 @@ module OmniAuth
       option :client_options, {}
 
       DEFAULT_CLIENT_OPTIONS = {
-        "http_method" => :get,
-        "site" => "http://www.khanacademy.org",
-        "request_token_path" => "/api/auth/request_token",
-        "access_token_path" => "/api/auth/access_token"
+        "http_method" => :post,
+        "site" => "https://www.khanacademy.org",
+        "request_token_path" => "/api/auth2/request_token",
+        "access_token_path" => "/api/auth2/access_token",
+        "authorize_path" => "/api/auth2/authorize"
       }
 
       attr_reader :access_token
