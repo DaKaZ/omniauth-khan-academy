@@ -17,7 +17,7 @@ module OmniAuth
       option :consumer_key, nil
       option :consumer_secret, nil
       option :callback_url, nil
-      option :client_options, {}
+      option :client_options, nil
 
       DEFAULT_CLIENT_OPTIONS = {
         "http_method" => :post,
@@ -32,17 +32,21 @@ module OmniAuth
       # this will redirect to the KhanAcademy login page where you can login using google, facebook or khan"s login
       # Khan returns the required credentials for the request token after authentication
       def request_phase
-        session["oauth"] ||= {}
-        redirect login_url
+        # session["oauth"] ||= {}
+        # redirect login_url
+        @request_token = consumer.get_request_token(:oauth_callback => callback_url)
+        session[:request_token] = @request_token
+        redirect @request_token.authorize_url(:oauth_callback => callback_url)
       end
 
 
       def callback_phase
-        raise OmniAuth::NoSessionError.new("Session Expired") if session["oauth"].nil?
+        raise OmniAuth::NoSessionError.new("Session Expired") if session[:request_token].nil?
         # Create a request token from the token and secret provided in the response
-        request_token = ::OAuth::AccessToken.new(consumer, request["oauth_token"], request["oauth_token_secret"])
+        # request_token = ::OAuth::AccessToken.new(consumer, request["oauth_token"], request["oauth_token_secret"])
         # Request access_token from the created request_token
-        @access_token = consumer.get_access_token(request_token, {oauth_callback: callback_url, oauth_verifier: request["oauth_verifier"]})
+        @access_token = @request_token.get_access_token
+        # @access_token = consumer.get_access_token(request_token, {oauth_callback: callback_url, oauth_verifier: request["oauth_verifier"]})
 
         super
       rescue ::Timeout::Error => e
