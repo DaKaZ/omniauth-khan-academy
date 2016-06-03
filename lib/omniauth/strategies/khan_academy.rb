@@ -88,7 +88,7 @@ module OmniAuth
       end
 
       def callback_url
-        options.callback_url
+        options.callback_url || super
       end
 
 

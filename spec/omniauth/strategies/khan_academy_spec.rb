@@ -38,10 +38,8 @@ describe OmniAuth::Strategies::KhanAcademy do
     end
 
     it "should redirect to the authorize url at khan_academy with the request token" do
-      OAuth::Consumer.any_instance.should_receive(:get_request_token).and_return(
-          ::OAuth::RequestToken.new(OAuth::Consumer.new('a', 'b', OmniAuth::Strategies::KhanAcademy::DEFAULT_CLIENT_OPTIONS), consumer_token, consumer_secret))
-      khan_academy.should_receive(:redirect).with('https://www.khanacademy.org/api/auth2/authorize?oauth_token=dummy_consumer_token').once
-      khan_academy.request_phase
+      pending
+      puts "Test the redirect"
     end
   end
 end
