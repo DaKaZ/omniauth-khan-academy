@@ -3,6 +3,7 @@ require "omniauth"
 require "oauth"
 
 # for Hash#to_query
+require "active_support"
 require "active_support/core_ext"
 
 module OmniAuth
@@ -29,25 +30,23 @@ module OmniAuth
 
       attr_reader :access_token
 
-      # this will redirect to the KhanAcademy login page where you can login using google, facebook or khan"s login
+      # this will retrieve the request token and then redirect to the KhanAcademy login page
+      # where you can login using google, facebook or khan's login
       # Khan returns the required credentials for the request token after authentication
       def request_phase
-        # session["oauth"] ||= {}
-        # redirect login_url
-        @request_token = consumer.get_request_token(:oauth_callback => callback_url)
+        @request_token = consumer.get_request_token({exclude_callback: true}, {oauth_callback: callback_url})
         session[:request_token] = @request_token
-        redirect @request_token.authorize_url(:oauth_callback => callback_url)
+        puts @request_token.authorize_url
+        redirect @request_token.authorize_url
       end
 
 
       def callback_phase
         raise OmniAuth::NoSessionError.new("Session Expired") if session[:request_token].nil?
         # Create a request token from the token and secret provided in the response
-        # request_token = ::OAuth::AccessToken.new(consumer, request["oauth_token"], request["oauth_token_secret"])
+        request_token = ::OAuth::RequestToken.new(consumer, request["oauth_token"], request["oauth_token_secret"])
         # Request access_token from the created request_token
-        @access_token = @request_token.get_access_token
-        # @access_token = consumer.get_access_token(request_token, {oauth_callback: callback_url, oauth_verifier: request["oauth_verifier"]})
-
+	      @access_token = request_token.get_access_token(oauth_verifier: request['oauth_verifier'])
         super
       rescue ::Timeout::Error => e
         fail!(:timeout, e)
@@ -89,24 +88,13 @@ module OmniAuth
       end
 
       def callback_url
-        options.callback_url || super
+        options.callback_url
       end
 
 
       def consumer
         @consumer ||= ::OAuth::Consumer.new(options.consumer_key, options.consumer_secret, client_options)
       end
-
-
-      def login_url
-        req = consumer.create_signed_request(:get, consumer.request_token_url, nil, {oauth_callback: callback_url})
-
-        oauth_params_string = req.instance_variable_get("@header")["authorization"].first
-        oauth_params_hash = req.parse_header(oauth_params_string)
-
-        "#{consumer.request_token_url}?#{oauth_params_hash.to_query}"
-      end
-
     end
 
   end

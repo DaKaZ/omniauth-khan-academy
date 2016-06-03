@@ -11,7 +11,7 @@ describe OmniAuth::Strategies::KhanAcademy do
   describe "DEFAULT_CLIENT_OPTIONS" do
     subject{ OmniAuth::Strategies::KhanAcademy::DEFAULT_CLIENT_OPTIONS }
 
-    it{ should eq({"http_method" => :get, "site" => "http://www.khanacademy.org", "request_token_path" => "/api/auth/request_token", "access_token_path" => "/api/auth/access_token"}) }
+    it{ should eq({"http_method" => :post, "authorize_path" => "/api/auth2/authorize", "site" => "https://www.khanacademy.org", "request_token_path" => "/api/auth2/request_token", "access_token_path" => "/api/auth2/access_token"}) }
   end
 
   describe "#client_options" do
@@ -34,25 +34,14 @@ describe OmniAuth::Strategies::KhanAcademy do
 
   describe "#request_phase" do
     before do
-      khan_academy.stub(:login_url).and_return('login_url')
       khan_academy.stub(:session).and_return({})
     end
 
-    it "should redirect to the login url at khan_academy" do
-      khan_academy.should_receive(:redirect).with('login_url').once
-
+    it "should redirect to the authorize url at khan_academy with the request token" do
+      OAuth::Consumer.any_instance.should_receive(:get_request_token).and_return(
+          ::OAuth::RequestToken.new(OAuth::Consumer.new('a', 'b', OmniAuth::Strategies::KhanAcademy::DEFAULT_CLIENT_OPTIONS), consumer_token, consumer_secret))
+      khan_academy.should_receive(:redirect).with('https://www.khanacademy.org/api/auth2/authorize?oauth_token=dummy_consumer_token').once
       khan_academy.request_phase
     end
-  end
-
-  describe "login_url" do
-    before do
-      khan_academy.stub(:callback_url).and_return("http://callback.url")
-    end
-
-    subject { khan_academy.login_url }
-
-    it{ should be_a(String) }
-    it{ should =~ /\Ahttps:\/\/www.khanacademy.org\/api\/auth\/request_token\?oauth_callback=.+&oauth_consumer_key=\w+&oauth_nonce=\w+&oauth_signature.+&oauth_signature_method=HMAC-SHA1&oauth_timestamp=\d+&oauth_version=1\.0\z/ }
   end
 end
